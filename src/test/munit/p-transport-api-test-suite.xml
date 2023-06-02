@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="p-transport-api-test-suite.xml" />
+	<munit:test name="postive_p-transport-api-test-suite-consume_ftp_filesFlowTest" doc:id="26078501-c472-4f9f-9b5a-834a9bc8582b" description="Test">
+		<munit:behavior >
+			<set-payload value="#[readUrl('classpath://mockResources/consume_input.json')]" doc:name="Set Payload for queue message" doc:id="d2a0907f-a892-40f1-97d7-08a1cc6849e2" />
+			<munit-tools:mock-when doc:name="Mock when AS Interface inserting into queue " doc:id="8f3786d0-520a-4a2d-af9f-b88b8b13fe29" processor="jms:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Publish TO Q.AS.FIIO QUEUE" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when Sales Force Interface inserting into queue " doc:id="7414fb9b-ac36-4dc9-82be-1bed47c8ff65" processor="jms:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Publish TO Q.SF.FIFO QUEUE" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when SAP Interface inserting into queue " doc:id="3a703587-69a7-417d-9f27-02b3fba14b34" processor="jms:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Publish TO Q.SAP.FIFO QUEUE" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when OMS Interface inserting in queue" doc:id="7faeedba-4c94-4f19-98f9-0034cd0643c5" processor="jms:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Publish TO Q.OMS.FIFO QUEUE" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="postive_consume_ftp_filesFlow" doc:id="e0d60437-84c8-476e-b7f4-9daecfe12c6b" name="consume_p_transport-api"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression to payload" doc:id="142fd63c-5e1e-444f-82dd-273e1365c93d" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload must equalTo([
+	{
+    "FileName": "WBSExport_20220510_15424.txt",
+    "CostObjectHierarchyLevel": "2",
+    "ASInterface": "true",
+    "SalesForceInterface": "true",
+    "SAPInterFace": "true",
+    "OMSInterface": "true",
+    "ProjectID": "PROJECT-K103244",
+    "ProjectTitle": "OMS PROJECT #1 - CPG",
+    "TotalInvestmentAmount": "10000",
+    "ExpensePlannedTotalInstalledCost": "10000",
+    "CapitalPlannedTotalInstalledCost": "0",
+    "WorkingCapital": "0",
+    "HierarchyPathID": "PROJECT-K103244.01.00",
+    "CostObjectName": "PDRI Category",
+    "SAPP3PlannedCosts": "0",
+    "SAPP1PlannedCosts": "0",
+    "SAPSettlementRule1": "0",
+    "ProjectWBSInterfaceFilterHOURLYCO": "Y",
+    "ProjectWBSInterfaceHRAPIEXPTEXT": "2020-07-10 11:00:00",
+    "LastUpdateDate": "2020-06-30T10:31:15.887-04",
+    "OriginalBudget": "10000",
+    "CurrentBudget": "10000",
+    "Default": "0",
+    "Materials": "0",
+    "Construction": "0",
+    "Engineering": "0",
+    "Cost": "10000",
+    "StartUp": "0",
+    "Equipment": "0"
+  }
+	
+])]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="p-transport-api-test-suite-consume_ftp_filesFlowTest" doc:id="c3afea1e-0d06-4a95-9f47-7fa097d2fde6" description="Test" expectedErrorType="MULE:COMPOSITE_ROUTING">
+		<munit:behavior >
+			<set-payload value="#[readUrl('classpath://mockResources/consume_input.json')]" doc:name="Set Payload for queue message" doc:id="234318cc-da49-4141-b1fd-baff489b0823" />
+			<munit-tools:mock-when doc:name="Mock when publish and getting JMS:CONSUMING error" doc:id="c53a70bb-01df-4148-a7c1-353b2d23a8da" processor="jms:publish">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Publish TO Q.AS.FIIO QUEUE" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="MULE:COMPOSITE_ROUTING" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="postive_consume_p_transport_api" doc:id="0856cb81-d047-43fc-ae83-aba9845a1630" name="consume_p_transport-api"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals to payload" doc:id="cb351be4-540a-413d-ad56-32b51128889f" actual="#[payload.message]" expected='#["In Any issue block"]' />
+		</munit:validation>
+	</munit:test>
+
+</mule>

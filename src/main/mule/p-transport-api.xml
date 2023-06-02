@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="consume_p_transport-api" doc:id="da67306f-52eb-420c-ac11-5a2d437ff3af" >
+		<jms:listener doc:name="On New Message from queue" doc:id="28f1f3ba-17da-4e3c-b41c-bd71b25a613f" config-ref="JMS_Config" destination="${activeMQ.client.queueName}">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:listener>
+		<logger level="INFO" doc:name="start of consume flow" doc:id="3fcebbdd-02b0-4182-8f7e-191114762523" message='#["start of consume flow"]' />
+		<ee:transform doc:name="consume_response_in_JSON" doc:id="e59a827b-20eb-48f3-a8dd-5ef30d3cbabc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.projects.*project.*wbs orderBy $.HierarchyPathID groupBy ((item, index) -> item.ProjectID )]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+<!-- [STUDIO:"Consume"]		<jms:consume doc:name="Consume" doc:id="b5151921-fef1-4f3c-a6cc-ab72b2619d44" config-ref="JMS_Config" destination="${activeMQ.client.queueName}"/> [STUDIO] -->
+		<foreach doc:name="For Each" doc:id="9a575d9e-1911-4611-b7f9-175eb31b99a9" >
+			<logger level="DEBUG" doc:name="Inside the object to find out which interface is true" doc:id="c0c6de1d-722f-4f57-8b74-08d0fa4210b3" message="#[payload]" />
+			<scatter-gather doc:name="Scatter-Gather for multiple interface can be true in one request." doc:id="d9724706-1967-4fe9-ad23-9275cd32836e" >
+				<route >
+					<ee:transform doc:name="ASInterface if is not null" doc:id="7fc943c9-0a4c-4a4d-8624-a5795f08063f" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (payload[0].ASInterface[0] == "true")
+   payload[0]
+else
+   null]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<choice doc:name="Choice if payload is not null" doc:id="498f7ea7-94ba-41f4-84e7-0f3aae8a4556" >
+						<when expression="#[payload != null]" >
+							<logger level="INFO" doc:name="inside the AS Interface" doc:id="a73faa7f-288c-4f57-9800-b4329bc52600" message='#["inside the AS Interface"]' />
+							<jms:publish doc:id="fb1ea69f-1d68-4495-a920-c77b0e8197cf" config-ref="JMS_Config" destination="${activeMQ.client.S.AS.FIFO}" doc:name="Publish TO Q.AS.FIIO QUEUE" />
+						</when>
+					</choice>
+				</route>
+				<route >
+					<ee:transform doc:name="SaleForceInterface if is not null" doc:id="f13eb96c-782f-4352-abc1-ded8e747b2e8" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (payload[0].SalesForceInterface[0] == "true")
+   payload[0]
+else
+   null]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<choice doc:name="Choice if payload is not null" doc:id="ca8dadc4-f204-4b28-860d-626e7918433a" >
+						<when expression="#[payload != null]" >
+							<logger level="INFO" doc:name="inside the SaleForce Interface" doc:id="a30ab67a-d358-4b65-bc03-b7fa5eb21ac6" message='#["inside the SaleForce Interface"]' />
+							<jms:publish doc:id="133141da-b7eb-4626-bb59-6f2896dda3a8" config-ref="JMS_Config" destination="${activeMQ.client.saleforceQueue}" doc:name="Publish TO Q.SF.FIFO QUEUE" />
+						</when>
+					</choice>
+				</route>
+				<route >
+					<ee:transform doc:name="SAPInterFace if is not null" doc:id="a2b08e83-a6e8-473d-a7bc-6e176d464a00" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+%dw 2.0
+output application/json
+---
+if (payload[0].SAPInterFace[0] == "true")
+   payload[0]
+else
+   null]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<choice doc:name="Choice if payload is not null" doc:id="6c38cfeb-25e6-4fef-b89f-b1311fa1f3ec" >
+						<when expression="#[payload != null]" >
+							<logger level="INFO" doc:name="inside the SAP Interface" doc:id="ece5c468-57f7-48e9-8696-fa4be78aacca" message='#["inside the SAP Interface"]' />
+							<jms:publish doc:id="b9436b52-005a-49f2-9a3b-5a796e4b48e7" config-ref="JMS_Config" destination="${activeMQ.client.Q.SAP.FIFO}" doc:name="Publish TO Q.SAP.FIFO QUEUE" />
+						</when>
+					</choice>
+				</route>
+				<route >
+					<ee:transform doc:name="OMInterfaces if is not null" doc:id="4681ac04-451b-4210-8595-bb0fc3aa186d" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (payload[0].OMSInterface[0] == "true")
+   payload[0]
+else
+   null]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<choice doc:name="Choice if payload is not null" doc:id="967308d2-74e6-4363-91e5-9809e6c18b98" >
+						<when expression="#[payload != null]" >
+							<logger level="INFO" doc:name="inside the OM interface" doc:id="846bb66f-6aca-4132-aef8-d6aee9e38b9c" message='#["inside the OM interface"]' />
+							<jms:publish doc:id="c2aeb258-ff11-4e0c-8df3-9d838b3fd95d" config-ref="JMS_Config" destination="${activeMQ.client.Q.OMS.FIFO}" doc:name="Publish TO Q.OMS.FIFO QUEUE" />
+						</when>
+					</choice>
+				</route>
+			</scatter-gather>
+			<logger level="INFO" doc:name="End of the interfaces" doc:id="70a31c56-4d02-4a24-bcee-32e9ba1dbb6a" message='#["End of the interfaces"]' />
+		</foreach>
+		<ee:transform doc:name="Arraylist to JSON" doc:id="0ca08016-153c-4bca-bba9-b08c60fac8ed" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="consumer payload after filter" doc:id="833c7a9a-d280-4d4c-bff9-5d104d06e27a" message="#[payload]" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="584ab77e-2eaa-4552-b29a-3b8475f75e0d" type="JMS:PUBLISHING" >
+				<logger level="ERROR" doc:name="JMS:CONNECTIVITY, JMS:CONSUMING" doc:id="e63cef7f-5f32-43c0-8158-68a6e480f624" message='#["JMS:CONNECTIVITY, JMS:CONSUMING"]' />
+				<ee:transform doc:name="Error message" doc:id="f8c952e3-3267-45c3-b4c3-76a4f36cfb78" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"connectivity issue found"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="9d61b830-bfe1-4f0b-9cbf-3274a8bf2440" type="JMS:DESTINATION_NOT_FOUND" >
+				<logger level="ERROR" doc:name="DESTINATION" doc:id="e5246db1-108e-495f-bc50-878a1982f29f" message='#["DESTINATION or name of queue  not found"]' />
+				<ee:transform doc:name="Error message" doc:id="d75ab1f2-a606-4697-abf2-74e9b9f4e63f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"DESTINATION or name of queue  not found"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate2" doc:id="648b5053-ff82-41bf-8216-3fe1c8129dd6" type="ANY" >
+				<logger level="ERROR" doc:name="DESTINATION" doc:id="1889abab-737e-4a0f-89c4-ccf56f63623b" message='#["In Any issue block"]' />
+				<ee:transform doc:name="Error message" doc:id="92104d21-f19a-4f3d-957f-1254ac6b59c2" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"In Any issue block"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
