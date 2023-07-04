@@ -58,7 +58,7 @@ else
 					</ee:transform>
 					<choice doc:name="Choice if payload is not null" doc:id="ca8dadc4-f204-4b28-860d-626e7918433a" >
 						<when expression="#[payload != null]" >
-							<logger level="INFO" doc:name="inside the SaleForce Interface" doc:id="a30ab67a-d358-4b65-bc03-b7fa5eb21ac6" message='#["inside the SaleForce Interface"]' />
+							<logger level="INFO" doc:name="inside the SaleForce Interface" doc:id="a30ab67a-d358-4b65-bc03-b7fa5eb21ac6" message='#["inside the SaleForce Interface "]' />
 							<jms:publish doc:id="133141da-b7eb-4626-bb59-6f2896dda3a8" config-ref="JMS_Config" destination="${activeMQ.client.saleforceQueue}" doc:name="Publish TO Q.SF.FIFO QUEUE" />
 						</when>
 					</choice>
