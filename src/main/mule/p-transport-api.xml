@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-    
+
 <mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 				<jms:queue-consumer />
 			</jms:consumer-type>
 		</jms:listener>
-		<logger level="INFO" doc:name="start of consume flow" doc:id="3fcebbdd-02b0-4182-8f7e-191114762523" message='#["start of consume flow"]' />
+		<logger level="INFO" doc:name="start of consume flow" doc:id="3fcebbdd-02b0-4182-8f7e-191114762523" message='#["start of consume flow "]' />
 		<ee:transform doc:name="consume_response_in_JSON" doc:id="e59a827b-20eb-48f3-a8dd-5ef30d3cbabc" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -23,7 +23,7 @@ payload.projects.*project.*wbs orderBy $.HierarchyPathID groupBy ((item, index) 
 		</ee:transform>
 <!-- [STUDIO:"Consume"]		<jms:consume doc:name="Consume" doc:id="b5151921-fef1-4f3c-a6cc-ab72b2619d44" config-ref="JMS_Config" destination="${activeMQ.client.queueName}"/> [STUDIO] -->
 		<foreach doc:name="For Each" doc:id="9a575d9e-1911-4611-b7f9-175eb31b99a9" >
-			<logger level="DEBUG" doc:name="Inside the object to find out which interface is true" doc:id="c0c6de1d-722f-4f57-8b74-08d0fa4210b3" message="#[payload]" />
+			<logger level="DEBUG" doc:name="Inside the object to find out which interface is truemmmmmm" doc:id="c0c6de1d-722f-4f57-8b74-08d0fa4210b3" message="#[payload]" />
 			<scatter-gather doc:name="Scatter-Gather for multiple interface can be true in one request." doc:id="d9724706-1967-4fe9-ad23-9275cd32836e" >
 				<route >
 					<ee:transform doc:name="ASInterface if is not null" doc:id="7fc943c9-0a4c-4a4d-8624-a5795f08063f" >
@@ -58,7 +58,7 @@ else
 					</ee:transform>
 					<choice doc:name="Choice if payload is not null" doc:id="ca8dadc4-f204-4b28-860d-626e7918433a" >
 						<when expression="#[payload != null]" >
-							<logger level="INFO" doc:name="inside the SaleForce Interface" doc:id="a30ab67a-d358-4b65-bc03-b7fa5eb21ac6" message='#["inside the SaleForce Interface "]' />
+							<logger level="INFO" doc:name="inside the SaleForce Interface" doc:id="a30ab67a-d358-4b65-bc03-b7fa5eb21ac6" message='#["inside the SaleForce Interface"]' />
 							<jms:publish doc:id="133141da-b7eb-4626-bb59-6f2896dda3a8" config-ref="JMS_Config" destination="${activeMQ.client.saleforceQueue}" doc:name="Publish TO Q.SF.FIFO QUEUE" />
 						</when>
 					</choice>
